@@ -1,0 +1,12 @@
+freebsd_task:
+        install_script: ASSUME_ALWAYS_YES=yes pkg bootstrap -f ; pkg install -y kyua pkgconf cmake libiconv zstd
+        script:
+                - cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/tmp/minizip -DBUILD_SHARED_LIBS=ON -DMZ_BUILD_UNIT_TESTS=ON -DMZ_BUILD_FUZZ_TESTS=ON -DMZ_BUILD_TESTS=ON -DCMAKE_C_FLAGS=-DLIBICONV_PLUG
+                - cmake --build build
+        check_script:
+                - cd build
+                - ctest --output-on-failure || { kyua report --verbose ; exit 1 ; }
+        matrix:
+                - name: freebsd13-amd64
+                  freebsd_instance:
+                     image: freebsd-13-0-release-amd64
